@@ -175,7 +175,7 @@ DVDT emphasizes safe, observable execution: Discover and Validate separate decis
 
 Minimal example with dvdt_run:
 
-``python
+```python
 from cli import command, dvdt_run
 
 @command(add_args=lambda p: p.add_argument("--dry-run", action="store_true"))
