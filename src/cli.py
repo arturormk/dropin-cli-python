@@ -11,20 +11,19 @@ Features:
 """
 
 import argparse
-import json
-import sys
-import os
-import inspect
-import textwrap
-import time
-import shutil
-from dataclasses import asdict, is_dataclass, dataclass
-from typing import Any, Callable, Generic, Optional, Sequence, TypeVar
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import datetime as _dt
 import enum as _enum
+import inspect
+import json
+import os
 import pathlib as _pathlib
-
+import shutil
+import sys
+import textwrap
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import asdict, dataclass, is_dataclass
+from typing import Any, Callable, Generic, Optional, Sequence, TypeVar
 
 __all__ = [
     "command", "build_subcommand_parser", "dispatch",
@@ -45,8 +44,15 @@ __version__ = "0.1.0"
 
 try:  # Pretty tables & progress
     from rich.console import Console
+    from rich.progress import (
+        BarColumn,
+        TaskProgressColumn,
+        TimeRemainingColumn,
+    )
+    from rich.progress import (
+        Progress as RichProgress,
+    )
     from rich.table import Table as RichTable
-    from rich.progress import Progress as RichProgress, BarColumn, TimeRemainingColumn, TaskProgressColumn
     _HAVE_RICH = True
 except Exception:
     _HAVE_RICH = False
@@ -264,7 +270,8 @@ def render(obj: Any, args: argparse.Namespace) -> None:
         widths = [max(len(str(c)), *(len(str(r.get(c, ""))) for r in rows)) for c in cols]
         header = " | ".join(c.ljust(w) for c, w in zip(cols, widths))
         sep = "-+-".join("-" * w for w in widths)
-        print(header); print(sep)
+        print(header)
+        print(sep)
         for r in rows:
             print(" | ".join(str(r.get(c, "")).ljust(w) for c, w in zip(cols, widths)))
         return

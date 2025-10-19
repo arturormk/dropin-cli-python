@@ -1,0 +1,10 @@
+AUTHORS
+LICENSE
+README.md
+pyproject.toml
+src/cli.py
+src/dropin_cli_python.egg-info/PKG-INFO
+src/dropin_cli_python.egg-info/SOURCES.txt
+src/dropin_cli_python.egg-info/dependency_links.txt
+src/dropin_cli_python.egg-info/top_level.txt
+tests/test_cli.py

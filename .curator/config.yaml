@@ -1,0 +1,19 @@
+# AI Curator configuration
+# This file declares the default AI model and policy used when interacting with
+# assistants across different clients (CLI, editor plugins, bots).
+
+default_model:
+  provider: anthropic
+  model: claude-3-5-sonnet-20241022
+  alias: "Claude Sonnet 4"
+  enabled_for: ["all"]  # all clients
+
+policy:
+  # AI suggestions are drafts; humans approve direction and releases.
+  require_tests_for_behavior_change: true
+  require_adr_for_architecture_change: true
+  attribution_note: "AI-assisted; human curated"
+
+notes:
+  - Update the model name if the provider renames releases.
+  - See ADR-0010 for policy context.

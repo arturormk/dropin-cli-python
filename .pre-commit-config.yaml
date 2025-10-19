@@ -1,0 +1,33 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: import-smoke
+        name: Import smoke (cli)
+        entry: bash -lc 'PYTHONPATH=src python -c "import cli; print(cli.__version__)"'
+        language: system
+        pass_filenames: false
+      - id: fast-tests
+        name: Fast tests
+        entry: bash scripts/fast_tests.sh
+        language: system
+        pass_filenames: false
+      - id: adr-index-check
+        name: ADR index check
+        entry: python scripts/check_adr_index.py
+        language: system
+        pass_filenames: false

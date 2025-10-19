@@ -1,3 +1,45 @@
+Metadata-Version: 2.4
+Name: dropin-cli-python
+Version: 0.1.0
+Summary: Dependency-light helper to build single-file CLIs in Python
+Author: Arturo
+License: MIT License
+        
+        Copyright (c) 2025 Arturo R Montesinos
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Keywords: cli,utilities,dvdt,command-line,dropin
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Environment :: Console
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: AUTHORS
+Dynamic: license-file
+
 # dropin-cli-python
 
 Minimal, dependency‑light helper to build single‑file CLIs in Python:
@@ -68,23 +110,3 @@ def cmd_sync(args):
 ## Screenshot
 
 ![Example](docs/screenshot-1.png)
-
----
-
-## Attribution & Curation
-
-This project is AI-assisted and human curated. See ADR-0010 for the AI curation policy. Default assistant model is "Claude Sonnet 4" enabled for all clients (see `.curator/config.yaml`).
-
-## Development quickstart
-
-- Python 3.9+
-- Create and activate a venv, then:
-
-```
-pip install -r requirements-dev.txt
-pre-commit install
-PYTHONPATH=src pytest -q
-ruff check . && ruff format --check .
-```
-
-CI runs lint, type checks, tests, build, and ADR index verification.
