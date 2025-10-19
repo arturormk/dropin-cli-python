@@ -1,5 +1,7 @@
 # dropin-cli-python
 
+[![CI](https://github.com/arturormk/dropin-cli-python/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/arturormk/dropin-cli-python/actions/workflows/ci.yml)
+
 Minimal, dependency‑light helper to build single‑file CLIs in Python:
 - Collects command functions automatically with a decorator.
 - Prints results as JSON, YAML, or ASCII/pretty tables.
@@ -13,6 +15,26 @@ Works great for quick internal utilities with a polished command-line UX.
 > **Examples:** `Pillow` is needed only for `icons.py`.
 
 ---
+
+## Highlights
+
+- Pure standard library by default (no required dependencies)
+- Rich output options: JSON, YAML, pretty/ASCII tables (with graceful fallbacks)
+- Simple progress bar abstraction (rich → tqdm → basic)
+- Small concurrent executor with ordered results and timings
+- Tiny DVDT helpers to keep CLIs testable and organized
+
+## Install
+
+You can run the script directly or install as a package.
+
+- Local script: clone and use `src/cli.py` directly (see Quick start below)
+- Package build: `python -m build` then `pip install dist/dropin_cli_python-*.whl`
+- Editable dev install: `pip install -e .`
+
+Optional extras (pretty output/progress/YAML):
+
+- `pip install 'dropin-cli-python[pretty]'` or `pip install -e .[pretty]`
 
 ## Quick start (two ways)
 
@@ -53,6 +75,14 @@ Optional extras:
 - Install pretty table/progress/YAML support via extras: `pip install dropin-cli-python[pretty]`
 - Extras include: `rich`, `tabulate`, `PyYAML`, `tqdm`
 
+## Examples
+
+See `examples/` for small demo programs:
+
+- `echo-words.py` — minimal command and table output
+- `icons.py` — image/emoji demo (requires Pillow)
+- `cli.py` — a fuller example harness
+
 ## The DVDT (Discover, Validate, Do, Tell) Pattern
 
 DVDT is a lightweight pattern for structuring small CLIs so they stay clear and testable:
@@ -92,6 +122,12 @@ def cmd_sync(args):
 
 ---
 
+## Design decisions (ADRs)
+
+Architectural choices are captured in `docs/adr/`. See the index here:
+
+- `docs/adr/README.md`
+
 ## Attribution & Curation
 
 This project is AI-assisted and human curated. See ADR-0010 for the AI curation policy. Default assistant model is "Claude Sonnet 4" enabled for all clients (see `.curator/config.yaml`).
@@ -109,3 +145,35 @@ ruff check . && ruff format --check .
 ```
 
 CI runs lint, type checks, tests, build, and ADR index verification.
+
+## Contributing
+
+See `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`. Run CI checks locally:
+
+```
+ruff check .
+mypy src tests scripts
+pytest -q
+```
+
+### Pre-commit hooks
+
+This repo ships a `.pre-commit-config.yaml` to enforce fast hygiene and curation policy checks locally.
+
+Enable:
+
+```
+pip install -r requirements-dev.txt
+pre-commit install
+pre-commit install --hook-type pre-push
+```
+
+Run all hooks manually:
+
+```
+pre-commit run --all-files
+```
+
+## License
+
+MIT License — see `LICENSE` for details.
