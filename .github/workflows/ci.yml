@@ -23,9 +23,6 @@ jobs:
           pip install -r requirements-dev.txt
           # Ensure typing stubs for optional deps used by mypy
           pip install types-PyYAML types-tabulate types-tqdm
-      - name: Ensure typing stubs for optional deps
-        run: |
-          pip install types-PyYAML types-tabulate types-tqdm
       - name: Lint (ruff)
         run: ruff check .
       - name: Type check (mypy)
