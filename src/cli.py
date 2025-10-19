@@ -14,6 +14,7 @@ import argparse
 import datetime as _dt
 import enum as _enum
 import inspect
+import importlib.util as _importlib_util
 import json
 import os
 import pathlib as _pathlib
@@ -23,7 +24,7 @@ import textwrap
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, is_dataclass
-from typing import Any, Callable, Generic, Optional, Sequence, TypeVar
+from typing import Any, Callable, Generic, Optional, Sequence, TypeVar, cast
 
 __all__ = [
     "command",
@@ -48,45 +49,15 @@ __all__ = [
 __version__ = "0.1.0"
 
 
-# =========================================================
-# Section: Optional dependencies (rich, tabulate, yaml)
-# =========================================================
+"""
+Optional dependencies are imported lazily in the code paths where they are used
+to avoid module-level redefinition/type-checking issues and to keep import cost
+low for plain JSON/repr usage.
+"""
 
-try:  # Pretty tables & progress
-    from rich.console import Console
-    from rich.progress import (
-        BarColumn,
-        TaskProgressColumn,
-        TimeRemainingColumn,
-    )
-    from rich.progress import (
-        Progress as RichProgress,
-    )
-    from rich.table import Table as RichTable
-
-    _HAVE_RICH = True
-except Exception:
-    _HAVE_RICH = False
-    Console = None
-    RichTable = None
-    RichProgress = None
-    BarColumn = TimeRemainingColumn = TaskProgressColumn = None
-
-try:  # Simple table fallback
-    from tabulate import tabulate as _tabulate
-
-    _HAVE_TABULATE = True
-except Exception:
-    _HAVE_TABULATE = False
-    _tabulate = None
-
-try:  # YAML output
-    import yaml as _yaml
-
-    _HAVE_YAML = True
-except Exception:
-    _HAVE_YAML = False
-    _yaml = None
+_HAVE_RICH = _importlib_util.find_spec("rich") is not None
+_HAVE_TABULATE = _importlib_util.find_spec("tabulate") is not None
+_HAVE_YAML = _importlib_util.find_spec("yaml") is not None
 
 
 # =========================================================
@@ -113,7 +84,7 @@ def command(
     name: Optional[str] = None,
     help: Optional[str] = None,
     add_args: Optional[Callable[[argparse.ArgumentParser], None]] = None,
-):
+) -> Any:
     """
     Decorator to register a subcommand.
 
@@ -195,8 +166,9 @@ def add_output_format_flags(p: argparse.ArgumentParser) -> None:
 
 
 def _resolve_format(args: argparse.Namespace) -> str:
-    if getattr(args, "format", None):
-        return args.format
+    fmt = getattr(args, "format", None)
+    if fmt:
+        return str(fmt)
     for name in ("table", "pretty", "yaml", "repr"):
         if getattr(args, name, False):
             return name
@@ -205,7 +177,8 @@ def _resolve_format(args: argparse.Namespace) -> str:
 
 def _to_serializable(x: Any) -> Any:
     if is_dataclass(x):
-        return asdict(x)
+        # Safe: we just checked it's a dataclass instance
+        return asdict(cast(Any, x))
     if isinstance(x, (list, tuple)):
         return [_to_serializable(i) for i in x]
     if isinstance(x, dict):
@@ -236,7 +209,10 @@ def _rows_from_data(data: Any) -> tuple[list[dict[str, Any]], list[str]]:
         if not data:
             return [], []
         if isinstance(data[0], dict):
-            rows = data  # type: ignore[assignment]
+            # typing: data is list[dict[str, Any]] here
+            from typing import cast
+
+            rows = cast(list[dict[str, Any]], data)
         else:
             rows = [{"value": v} for v in data]
     else:
@@ -265,6 +241,8 @@ def render(obj: Any, args: argparse.Namespace) -> None:
         if not _HAVE_YAML:
             print("YAML output requested but PyYAML is not installed.", file=sys.stderr)
             sys.exit(2)
+        import yaml as _yaml
+
         print(_yaml.safe_dump(_to_serializable(obj), sort_keys=False, allow_unicode=True))
         return
 
@@ -278,6 +256,9 @@ def render(obj: Any, args: argparse.Namespace) -> None:
             return
         # Try rich first
         if _HAVE_RICH and not getattr(args, "no_color", False):
+            from rich.console import Console
+            from rich.table import Table as RichTable
+
             console = Console(stderr=False, force_jupyter=False)
             t = RichTable(show_header=True, header_style="bold")
             for c in cols:
@@ -288,6 +269,7 @@ def render(obj: Any, args: argparse.Namespace) -> None:
             return
         # Fallback to tabulate
         if _HAVE_TABULATE:
+            from tabulate import tabulate as _tabulate
             print(
                 _tabulate(
                     [[r.get(c, "") for c in cols] for r in rows], headers=cols, tablefmt="github"
@@ -350,7 +332,11 @@ def dispatch(argv: Optional[Sequence[str]] = None) -> int:
     p = build_subcommand_parser(prog=prog_name)
     args = p.parse_args(list(argv) if argv is not None else sys.argv[1:])
     try:
-        result = args._fn(args)  # type: ignore[attr-defined]
+        # set via parser.set_defaults(_fn=...) when building subcommands
+        from typing import Callable, cast
+
+        fn = cast(Callable[[argparse.Namespace], Any], getattr(args, "_fn"))
+        result = fn(args)
     except KeyboardInterrupt:
         print("Interrupted.", file=sys.stderr)
         return 130  # standard SIGINT exit
@@ -395,6 +381,9 @@ class Progress:
             return
 
         if _HAVE_RICH and sys.stderr.isatty():
+            from rich.console import Console
+            from rich.progress import Progress as RichProgress, BarColumn, TaskProgressColumn, TimeRemainingColumn
+
             self._console = Console(stderr=True)
             self._progress = RichProgress(
                 "[progress.description]{task.description}",
@@ -411,7 +400,7 @@ class Progress:
             return
 
         try:
-            from tqdm import tqdm as _tqdm  # type: ignore
+            from tqdm import tqdm as _tqdm
 
             self._tqdm = _tqdm(
                 total=self.total,
