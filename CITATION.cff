@@ -8,8 +8,8 @@ authors:
     family-names: Montesinos
 repository-code: https://github.com/arturormk/dropin-cli-python
 license: MIT
-version: 0.1.1
-date-released: 2025-10-19
+version: 0.1.0
+date-released: 2025-09-09
 abstract: >-
   Minimal, dependency-light Python helper for building single-file CLIs. Provides a command
   registry decorator, JSON/YAML/pretty table rendering with graceful fallbacks, a simple progress
