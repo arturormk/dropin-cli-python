@@ -4,15 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dropin-cli-python"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Dependency-light helper to build single-file CLIs in Python"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [{ name = "Arturo" }]
 keywords = ["cli", "utilities", "dvdt", "command-line", "dropin"]
 classifiers = [
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.9",
@@ -23,8 +22,19 @@ classifiers = [
 ]
 
 [tool.setuptools]
-py-modules = ["cli"]
 package-dir = {"" = "src"}
+packages = ["dropin_cli"]
+py-modules = ["cli"]
+
+[tool.setuptools.dynamic]
+version = { attr = "cli.__version__" }
+[project.optional-dependencies]
+pretty = [
+  "rich>=13",
+  "tabulate>=0.9",
+  "PyYAML>=6",
+  "tqdm>=4.66",
+]
 
 [tool.ruff]
 line-length = 100

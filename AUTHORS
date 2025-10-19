@@ -1,3 +1,10 @@
-Human maintainers:
+# Authors / Curators
 
-- Arturo (AI-assisted; human curated)
+Primary Curator & Maintainer
+- Arturo R. Montesinos
+
+Provenance
+- Code generated with AI assistance (see docs/adr/0010-ai-assistance-and-curation-policy.md) and curated via human review, testing, and documentation alignment.
+
+Contributions
+- Submitters are credited via Git history. Significant architectural or behavioral changes must reference an ADR.

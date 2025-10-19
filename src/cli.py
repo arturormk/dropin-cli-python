@@ -26,11 +26,21 @@ from dataclasses import asdict, dataclass, is_dataclass
 from typing import Any, Callable, Generic, Optional, Sequence, TypeVar
 
 __all__ = [
-    "command", "build_subcommand_parser", "dispatch",
-    "add_output_format_flags", "add_exec_flags", "add_debug_flags",
-    "render", "Progress",
-    "ExecOptions", "ExecItem", "ExecSummary", "execute_concurrent",
-    "dvdt_run", "dvdt_run_concurrent", "__version__",
+    "command",
+    "build_subcommand_parser",
+    "dispatch",
+    "add_output_format_flags",
+    "add_exec_flags",
+    "add_debug_flags",
+    "render",
+    "Progress",
+    "ExecOptions",
+    "ExecItem",
+    "ExecSummary",
+    "execute_concurrent",
+    "dvdt_run",
+    "dvdt_run_concurrent",
+    "__version__",
 ]
 
 
@@ -53,6 +63,7 @@ try:  # Pretty tables & progress
         Progress as RichProgress,
     )
     from rich.table import Table as RichTable
+
     _HAVE_RICH = True
 except Exception:
     _HAVE_RICH = False
@@ -63,6 +74,7 @@ except Exception:
 
 try:  # Simple table fallback
     from tabulate import tabulate as _tabulate
+
     _HAVE_TABULATE = True
 except Exception:
     _HAVE_TABULATE = False
@@ -70,6 +82,7 @@ except Exception:
 
 try:  # YAML output
     import yaml as _yaml
+
     _HAVE_YAML = True
 except Exception:
     _HAVE_YAML = False
@@ -82,6 +95,7 @@ except Exception:
 
 _CommandFn = Callable[..., Any]
 
+
 @dataclass(frozen=True)
 class _CmdSpec:
     help: str
@@ -89,14 +103,16 @@ class _CmdSpec:
     fn: _CommandFn
     add_args: Optional[Callable[[argparse.ArgumentParser], None]] = None
 
+
 _COMMANDS: dict[str, _CmdSpec] = {}
+
 
 def command(
     _fn: Any = None,
     *,
     name: Optional[str] = None,
     help: Optional[str] = None,
-    add_args: Optional[Callable[[argparse.ArgumentParser], None]] = None
+    add_args: Optional[Callable[[argparse.ArgumentParser], None]] = None,
 ):
     """
     Decorator to register a subcommand.
@@ -115,7 +131,7 @@ def command(
         def cmd_echo(args):
             \"\"\"Echo words\"\"\"
             return ...
-   """
+    """
     cmd_name_from_positional = None
     if isinstance(_fn, str) and name is None:
         cmd_name_from_positional = _fn
@@ -163,9 +179,12 @@ def command(
 # Section: Output formatting flags & renderer
 # =========================================================
 
+
 def add_output_format_flags(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("Output")
-    g.add_argument("--format", choices=["json", "pretty", "yaml", "table", "repr"], help="Select output format")
+    g.add_argument(
+        "--format", choices=["json", "pretty", "yaml", "table", "repr"], help="Select output format"
+    )
     g.add_argument("--table", action="store_true", help="Render as an ASCII/pretty table")
     g.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
     g.add_argument("--yaml", action="store_true", help="YAML output (requires PyYAML)")
@@ -174,6 +193,7 @@ def add_output_format_flags(p: argparse.ArgumentParser) -> None:
     g.add_argument("--limit", type=int, help="Limit rows for --table")
     g.add_argument("--no-color", action="store_true", help="Disable ANSI colors (rich)")
 
+
 def _resolve_format(args: argparse.Namespace) -> str:
     if getattr(args, "format", None):
         return args.format
@@ -181,6 +201,7 @@ def _resolve_format(args: argparse.Namespace) -> str:
         if getattr(args, name, False):
             return name
     return "json"
+
 
 def _to_serializable(x: Any) -> Any:
     if is_dataclass(x):
@@ -197,6 +218,7 @@ def _to_serializable(x: Any) -> Any:
     if isinstance(x, _enum.Enum):
         return _to_serializable(x.value)
     return x
+
 
 def _rows_from_data(data: Any) -> tuple[list[dict[str, Any]], list[str]]:
     """
@@ -227,11 +249,13 @@ def _rows_from_data(data: Any) -> tuple[list[dict[str, Any]], list[str]]:
                 cols.append(k)
     return rows, cols
 
+
 def _split_columns(arg: Optional[str], available: list[str]) -> list[str]:
     if not arg:
         return available
     requested = [c.strip() for c in arg.split(",") if c.strip()]
     return [c for c in requested if c in available] or available
+
 
 def render(obj: Any, args: argparse.Namespace) -> None:
     if obj is None:
@@ -264,7 +288,11 @@ def render(obj: Any, args: argparse.Namespace) -> None:
             return
         # Fallback to tabulate
         if _HAVE_TABULATE:
-            print(_tabulate([[r.get(c, "") for c in cols] for r in rows], headers=cols, tablefmt="github"))
+            print(
+                _tabulate(
+                    [[r.get(c, "") for c in cols] for r in rows], headers=cols, tablefmt="github"
+                )
+            )
             return
         # Last resort: plain text
         widths = [max(len(str(c)), *(len(str(r.get(c, ""))) for r in rows)) for c in cols]
@@ -292,6 +320,7 @@ def render(obj: Any, args: argparse.Namespace) -> None:
 # Section: Subcommand parser & dispatcher
 # =========================================================
 
+
 def build_subcommand_parser(
     prog: str = "tool",
     description: Optional[str] = None,
@@ -301,7 +330,7 @@ def build_subcommand_parser(
         prog=prog,
         description=description,
         epilog=epilog,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     sub = p.add_subparsers(dest="cmd", metavar="COMMAND", required=True)
     for name, spec in _COMMANDS.items():
@@ -314,6 +343,7 @@ def build_subcommand_parser(
         add_debug_flags(sp)
         sp.set_defaults(_fn=spec.fn)
     return p
+
 
 def dispatch(argv: Optional[Sequence[str]] = None) -> int:
     prog_name = os.path.basename(sys.argv[0]) or "tool"
@@ -329,6 +359,7 @@ def dispatch(argv: Optional[Sequence[str]] = None) -> int:
     except Exception as e:
         if getattr(args, "trace", False):
             import traceback
+
             traceback.print_exc()
         else:
             print(f"Error: {e.__class__.__name__}: {e}", file=sys.stderr)
@@ -341,6 +372,7 @@ def dispatch(argv: Optional[Sequence[str]] = None) -> int:
 # Section: Progress bar helper (rich → tqdm → basic)
 # =========================================================
 
+
 class Progress:
     """
     A small abstraction over rich/tqdm/TTY that writes to stderr and is safe to no-op.
@@ -351,6 +383,7 @@ class Progress:
             pb.update(i)
         pb.close()
     """
+
     def __init__(self, total: int, enabled: bool = True, description: str = ""):
         self.total = max(0, int(total))
         self.enabled = bool(enabled) and self.total > 0
@@ -379,7 +412,14 @@ class Progress:
 
         try:
             from tqdm import tqdm as _tqdm  # type: ignore
-            self._tqdm = _tqdm(total=self.total, desc=self.description, unit="it", file=sys.stderr, dynamic_ncols=True)
+
+            self._tqdm = _tqdm(
+                total=self.total,
+                desc=self.description,
+                unit="it",
+                file=sys.stderr,
+                dynamic_ncols=True,
+            )
             self._impl = "tqdm"
             return
         except Exception:
@@ -427,10 +467,12 @@ class Progress:
 # Section: Exec flags helpers (jobs, progress)
 # =========================================================
 
+
 def add_exec_flags(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("Execution")
     g.add_argument("--jobs", type=int, metavar="N", help="Max parallel workers (default: auto)")
     g.add_argument("--progress", action="store_true", help="Show a live progress bar on stderr")
+
 
 def add_debug_flags(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("Debugging")
@@ -444,6 +486,7 @@ def add_debug_flags(p: argparse.ArgumentParser) -> None:
 T = TypeVar("T")  # task
 R = TypeVar("R")  # worker result
 
+
 @dataclass(frozen=True)
 class ExecOptions:
     jobs: Optional[int] = None
@@ -452,12 +495,14 @@ class ExecOptions:
     thread_name_prefix: str = "worker"
     cancel_on_interrupt: bool = True
 
+
 @dataclass(frozen=True)
 class ExecItem(Generic[T, R]):
     task: T
     ok: bool
     result: Optional[R] = None
     error: Optional[str] = None
+
 
 @dataclass(frozen=True)
 class ExecSummary(Generic[T, R]):
@@ -466,19 +511,21 @@ class ExecSummary(Generic[T, R]):
     succeeded: int
     failed: int
 
+
 def execute_concurrent(
     tasks: Sequence[T],
     worker: Callable[[T], R],
     opts: Optional[ExecOptions] = None,
 ) -> ExecSummary[T, R]:
     """Run tasks in a thread pool, show progress if requested, and time the run."""
-    
+
     opts = opts or ExecOptions()
-    
+
     if not tasks:
         return ExecSummary(items=(), elapsed_ms=0, succeeded=0, failed=0)
 
     from contextlib import suppress
+
     start = time.perf_counter()
     max_workers = opts.jobs or min(32, (os.cpu_count() or 1) * 2 + 4)
 
@@ -486,7 +533,9 @@ def execute_concurrent(
 
     slots: list[Optional[ExecItem[T, R]]] = [None] * len(tasks)
     done = 0
-    with ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix=opts.thread_name_prefix) as ex:
+    with ThreadPoolExecutor(
+        max_workers=max_workers, thread_name_prefix=opts.thread_name_prefix
+    ) as ex:
         fut2i = {ex.submit(worker, t): i for i, t in enumerate(tasks)}
         try:
             for fut in as_completed(fut2i):
@@ -550,14 +599,17 @@ def dvdt_run(
     results = execute(plan)
     return to_output(plan, results) if to_output else results
 
+
 def dvdt_run_concurrent(
     args: argparse.Namespace,
     build_policy: Callable[[argparse.Namespace], Any],
     build_plan: Callable[[Any], Any],
     validate: Callable[[Any], None],
-    iter_tasks: Callable[[Any], Sequence[T]],      # from plan -> tasks
-    worker_factory: Callable[[Any, Any], Callable[[T], R]],  # (policy, plan) -> worker(task)->result
-    to_output: Callable[[Any, ExecSummary[T, R]], Any],       # (plan, summary) -> data
+    iter_tasks: Callable[[Any], Sequence[T]],  # from plan -> tasks
+    worker_factory: Callable[
+        [Any, Any], Callable[[T], R]
+    ],  # (policy, plan) -> worker(task)->result
+    to_output: Callable[[Any, ExecSummary[T, R]], Any],  # (plan, summary) -> data
     jobs_attr: str = "jobs",
     progress_attr: str = "progress",
     progress_desc: str = "Working",
@@ -580,4 +632,3 @@ def dvdt_run_concurrent(
     )
     summary = execute_concurrent(tasks, worker, opts)
     return to_output(plan, summary)
-

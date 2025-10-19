@@ -8,13 +8,15 @@ Minimal, dependency‑light helper to build single‑file CLIs in Python:
 
 Works great for quick internal utilities with a polished command-line UX.
 
-> **Python:** 3.9+ (uses modern type hints)  
-> **Dependencies:** none required. Optional: `rich`, `tabulate`, `PyYAML`, `tqdm`.  
+> **Python:** 3.9+ (uses modern type hints)
+> **Dependencies:** none required. Optional: `rich`, `tabulate`, `PyYAML`, `tqdm`.
 > **Examples:** `Pillow` is needed only for `icons.py`.
 
 ---
 
-## Quick start
+## Quick start (two ways)
+
+Option A — Drop-in single file (no install):
 
 1) Copy `src/cli.py` next to your script (or add `src/` to `PYTHONPATH`).
 2) Define commands with `@command` and return data; `dispatch()` handles parsing and output.
@@ -31,6 +33,25 @@ def cmd_echo(args):
 if __name__ == "__main__":
     raise SystemExit(dispatch())
 `````
+
+Option B — Installed package:
+
+````python
+# mytool.py
+from dropin_cli import command, dispatch
+
+@command(add_args=lambda p: p.add_argument("words", nargs="*"))
+def cmd_echo(args):
+    """Echo words"""
+    return [{"idx": i, "word": w} for i, w in enumerate(args.words)]
+
+if __name__ == "__main__":
+    raise SystemExit(dispatch())
+````
+
+Optional extras:
+- Install pretty table/progress/YAML support via extras: `pip install dropin-cli-python[pretty]`
+- Extras include: `rich`, `tabulate`, `PyYAML`, `tqdm`
 
 ## The DVDT (Discover, Validate, Do, Tell) Pattern
 

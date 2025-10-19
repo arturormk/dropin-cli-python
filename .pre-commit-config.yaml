@@ -21,6 +21,11 @@ repos:
         entry: bash -lc 'PYTHONPATH=src python -c "import cli; print(cli.__version__)"'
         language: system
         pass_filenames: false
+      - id: version-sync
+        name: Version sync (drop-in vs package)
+        entry: python scripts/check_versions.py
+        language: system
+        pass_filenames: false
       - id: fast-tests
         name: Fast tests
         entry: bash scripts/fast_tests.sh

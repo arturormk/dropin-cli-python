@@ -12,7 +12,11 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-import cli as dropin  # type: ignore
+try:
+    import dropin_cli as dropin  # type: ignore
+except Exception:
+    # Fallback to drop-in module if needed
+    import cli as dropin  # type: ignore
 
 
 def test_command_registration_and_help():
@@ -62,9 +66,17 @@ def test_table_output_fallback_plain(capsys, monkeypatch):
     def cmd_rows(args: argparse.Namespace):
         return [{"c1": 1, "c2": "x"}, {"c1": 2, "c2": "y"}]
 
-    # Force-disable rich and tabulate by monkeypatching module flags
-    monkeypatch.setattr(dropin, "_HAVE_RICH", False)
-    monkeypatch.setattr(dropin, "_HAVE_TABULATE", False)
+    # Force-disable rich and tabulate: if using re-exporting package, its internals
+    # live in module `cli`, so patch there instead.
+    if hasattr(dropin, "_HAVE_RICH") and hasattr(dropin, "_HAVE_TABULATE"):
+        target = dropin
+    else:
+        import importlib
+
+        target = importlib.import_module("cli")
+
+    monkeypatch.setattr(target, "_HAVE_RICH", False, raising=False)
+    monkeypatch.setattr(target, "_HAVE_TABULATE", False, raising=False)
 
     rc = dropin.dispatch(["rows", "--table", "--no-color"])
     assert rc == 0

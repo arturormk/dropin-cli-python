@@ -11,9 +11,9 @@ Usage:
   $ python examples/echo-words.py echo hello world --pretty
   $ python examples/echo-words.py echo hello world --yaml
   $ python examples/echo-words.py echo hello world --table
-  
+
   $ python examples/echo-words.py echo hello world --table --columns=idx
-  $ python examples/echo-words.py echo one two three --table --limit 2  
+  $ python examples/echo-words.py echo one two three --table --limit 2
 """
 
 from cli import command, dispatch
