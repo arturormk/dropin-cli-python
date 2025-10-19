@@ -36,6 +36,64 @@ Optional extras (pretty output/progress/YAML):
 
 - `pip install 'dropin-cli-python[pretty]'` or `pip install -e .[pretty]`
 
+## Try it
+
+Option A — No install (use the drop-in file)
+
+```bash
+# Optional: create a venv
+python -m venv .venv
+source .venv/bin/activate
+
+# Run a tiny demo using the drop-in module (no dependencies required)
+PYTHONPATH=src python - <<'PY'
+from cli import command, dispatch
+@command(add_args=lambda p: p.add_argument("name"))
+def cmd_hello(args): return {"hello": args.name}
+raise SystemExit(dispatch(["hello", "world"]))
+PY
+
+# Table output (ASCII fallback without extras)
+PYTHONPATH=src python - <<'PY'
+from cli import command, dispatch
+@command(add_args=lambda p: p.add_argument("words", nargs="*"))
+def cmd_echo(args): return [{"idx": i, "word": w} for i, w in enumerate(args.words)]
+raise SystemExit(dispatch(["echo", "one", "two", "--table", "--no-color"]))
+PY
+```
+
+Option B — Installed package
+
+```bash
+# Build and install locally
+python -m pip install --upgrade pip build
+python -m build
+pip install dist/dropin_cli_python-*.whl
+
+# One-off demo using the installed package
+python - <<'PY'
+from dropin_cli import command, dispatch
+@command(add_args=lambda p: p.add_argument("name"))
+def cmd_hello(args): return {"hello": args.name}
+raise SystemExit(dispatch(["hello", "world"]))
+PY
+```
+
+Optional pretty output and progress
+
+```bash
+# Install extras once to enable rich/tabulate/yaml/tqdm
+pip install 'dropin-cli-python[pretty]'
+
+# Now the table demo renders with rich styling (no --no-color needed)
+PYTHONPATH=src python - <<'PY'
+from cli import command, dispatch
+@command(add_args=lambda p: p.add_argument("words", nargs="*"))
+def cmd_echo(args): return [{"idx": i, "word": w} for i, w in enumerate(args.words)]
+raise SystemExit(dispatch(["echo", "alpha", "beta", "--table"]))
+PY
+```
+
 ## Quick start (two ways)
 
 Option A — Drop-in single file (no install):
