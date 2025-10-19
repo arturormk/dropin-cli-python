@@ -242,8 +242,7 @@ def render(obj: Any, args: argparse.Namespace) -> None:
         if not _HAVE_YAML:
             print("YAML output requested but PyYAML is not installed.", file=sys.stderr)
             sys.exit(2)
-        import yaml as _yaml
-
+        import yaml as _yaml  # type: ignore[import-untyped]
         print(_yaml.safe_dump(_to_serializable(obj), sort_keys=False, allow_unicode=True))
         return
 
@@ -270,7 +269,7 @@ def render(obj: Any, args: argparse.Namespace) -> None:
             return
         # Fallback to tabulate
         if _HAVE_TABULATE:
-            from tabulate import tabulate as _tabulate
+            from tabulate import tabulate as _tabulate  # type: ignore[import-untyped]
 
             print(
                 _tabulate(
