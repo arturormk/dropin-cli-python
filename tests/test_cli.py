@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 # Ensure src on path before importing module under test
@@ -12,14 +13,17 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+dropin: ModuleType
 try:
-    import dropin_cli as dropin  # type: ignore
+    import dropin_cli as dropin
 except Exception:
     # Fallback to drop-in module if needed
-    import cli as dropin  # type: ignore
+    import cli as _dropin_fallback
+
+    dropin = _dropin_fallback
 
 
-def test_command_registration_and_help():
+def test_command_registration_and_help() -> None:
     # Define a simple command dynamically to avoid leaking into global state across tests
     @dropin.command(add_args=lambda p: p.add_argument("x", type=int))
     def cmd_inc(args: argparse.Namespace) -> dict[str, Any]:
@@ -33,9 +37,9 @@ def test_command_registration_and_help():
     assert sub.choices["inc"].description.startswith("Increment x")
 
 
-def test_dispatch_and_json_output(capsys):
+def test_dispatch_and_json_output(capsys: Any) -> None:
     @dropin.command(add_args=lambda p: p.add_argument("name"))
-    def cmd_hello(args: argparse.Namespace):
+    def cmd_hello(args: argparse.Namespace) -> dict[str, Any]:
         """Hello name"""
         return {"hello": args.name}
 
@@ -45,9 +49,9 @@ def test_dispatch_and_json_output(capsys):
     assert json.loads(out) == {"hello": "Alice"}
 
 
-def test_pretty_and_repr_outputs(capsys):
+def test_pretty_and_repr_outputs(capsys: Any) -> None:
     @dropin.command(add_args=lambda p: None)
-    def cmd_obj(args: argparse.Namespace):
+    def cmd_obj(args: argparse.Namespace) -> dict[str, Any]:
         return {"a": 1, "b": [1, 2]}
 
     rc = dropin.dispatch(["obj", "--pretty"])
@@ -61,9 +65,9 @@ def test_pretty_and_repr_outputs(capsys):
     assert out.startswith("{") and "'a': 1" in out
 
 
-def test_table_output_fallback_plain(capsys, monkeypatch):
+def test_table_output_fallback_plain(capsys: Any, monkeypatch: Any) -> None:
     @dropin.command(add_args=lambda p: None)
-    def cmd_rows(args: argparse.Namespace):
+    def cmd_rows(args: argparse.Namespace) -> list[dict[str, Any]]:
         return [{"c1": 1, "c2": "x"}, {"c1": 2, "c2": "y"}]
 
     # Force-disable rich and tabulate: if using re-exporting package, its internals
@@ -86,7 +90,7 @@ def test_table_output_fallback_plain(capsys, monkeypatch):
     assert "1" in out and "x" in out and "2" in out and "y" in out
 
 
-def test_execute_concurrent_trivial():
+def test_execute_concurrent_trivial() -> None:
     tasks = [1, 2, 3]
 
     def worker(x: int) -> int:

@@ -11,8 +11,8 @@ def main() -> int:
     sys.path.insert(0, str(root / "src"))
 
     try:
-        import cli  # type: ignore
-        import dropin_cli  # type: ignore
+        import cli
+        import dropin_cli
     except Exception as e:
         print(f"Import error during version check: {e}", file=sys.stderr)
         return 1

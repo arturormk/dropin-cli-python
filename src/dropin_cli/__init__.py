@@ -7,7 +7,7 @@ This package exists for users who prefer `pip install` over copying the file.
 The only source of logic is `src/cli.py`.
 """
 
-from cli import (  # type: ignore
+from cli import (
     ExecItem,
     ExecOptions,
     ExecSummary,

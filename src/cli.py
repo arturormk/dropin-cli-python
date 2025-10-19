@@ -13,8 +13,8 @@ Features:
 import argparse
 import datetime as _dt
 import enum as _enum
-import inspect
 import importlib.util as _importlib_util
+import inspect
 import json
 import os
 import pathlib as _pathlib
@@ -108,14 +108,15 @@ def command(
         cmd_name_from_positional = _fn
         _fn = None
 
-    def _register(fn: _CommandFn):
+    def _register(fn: _CommandFn) -> _CommandFn:
         # Derive command name if not provided
         derived = fn.__name__
         if derived.startswith("cmd_"):
             derived = derived[4:]
-        cmd_name = name or cmd_name_from_positional or derived
-        if not cmd_name:
+        cmd_name_opt: Optional[str] = name or cmd_name_from_positional or derived
+        if not cmd_name_opt:
             raise ValueError("Command name cannot be empty")
+        cmd_name = cmd_name_opt
         if cmd_name in _COMMANDS:
             raise ValueError(f"Command '{cmd_name}' is already registered")
 
@@ -270,6 +271,7 @@ def render(obj: Any, args: argparse.Namespace) -> None:
         # Fallback to tabulate
         if _HAVE_TABULATE:
             from tabulate import tabulate as _tabulate
+
             print(
                 _tabulate(
                     [[r.get(c, "") for c in cols] for r in rows], headers=cols, tablefmt="github"
@@ -382,7 +384,8 @@ class Progress:
 
         if _HAVE_RICH and sys.stderr.isatty():
             from rich.console import Console
-            from rich.progress import Progress as RichProgress, BarColumn, TaskProgressColumn, TimeRemainingColumn
+            from rich.progress import BarColumn, TaskProgressColumn, TimeRemainingColumn
+            from rich.progress import Progress as RichProgress
 
             self._console = Console(stderr=True)
             self._progress = RichProgress(
