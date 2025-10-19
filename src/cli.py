@@ -243,6 +243,7 @@ def render(obj: Any, args: argparse.Namespace) -> None:
             print("YAML output requested but PyYAML is not installed.", file=sys.stderr)
             sys.exit(2)
         import yaml as _yaml
+
         print(_yaml.safe_dump(_to_serializable(obj), sort_keys=False, allow_unicode=True))
         return
 
