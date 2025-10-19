@@ -16,6 +16,25 @@ Works great for quick internal utilities with a polished command-line UX.
 
 ---
 
+## TL;DR
+
+- Copy `src/cli.py` into your repo (or add `src/` to `PYTHONPATH`).
+- Write your commands in your own Python file and use the decorator + dispatcher:
+
+```python
+from cli import command, dispatch
+
+@command(add_args=lambda p: p.add_argument("name"))
+def cmd_hello(args):
+    return {"hello": args.name}
+
+if __name__ == "__main__":
+    raise SystemExit(dispatch())
+```
+
+- Run it: `python mytool.py hello world` (prints JSON by default, or `--table`, `--pretty`, `--yaml`).
+- No required dependencies: pure standard library. If available, it will use `rich` (pretty tables), `tabulate` (ASCII tables), `PyYAML` (YAML output), and `tqdm` (progress bars) for nicer UX.
+
 ## Highlights
 
 - Pure standard library by default (no required dependencies)
